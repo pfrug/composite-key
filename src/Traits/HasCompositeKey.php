@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 trait HasCompositeKey
 {
-    public $incrementing = false;
+    public function getIncrementing(): bool
+    {
+        return false;
+    }
 
     public function save(array $options = []): bool
     {
