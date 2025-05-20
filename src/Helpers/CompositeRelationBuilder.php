@@ -8,13 +8,22 @@ use Illuminate\Database\Eloquent\Collection;
 
 class CompositeRelationBuilder
 {
+    /**
+     * Creates a has-many relation using multiple key pairs.
+     *
+     * @param Model $model The parent model instance.
+     * @param class-string<Model> $related The related model class.
+     * @param array $foreignKeys Foreign keys in the related model.
+     * @param array $localKeys Local keys in the parent model.
+     * @return Relation
+     */
     public static function hasMany(Model $model, string $related, array $foreignKeys, array $localKeys): Relation
     {
         $builder = (new $related)->newQuery();
 
         foreach ($foreignKeys as $i => $foreignKey) {
             $localValue = $model->getAttribute($localKeys[$i]);
-            if (is_null($localValue)) {
+            if ($localValue === null) {
                 return self::emptyRelation($builder, collect(), true);
             }
             $builder->where($foreignKey, $localValue);
@@ -23,13 +32,22 @@ class CompositeRelationBuilder
         return self::relation($builder, $model, collect(), true);
     }
 
+    /**
+     * Creates a belongs-to relation using multiple key pairs.
+     *
+     * @param Model $model The child model instance.
+     * @param class-string<Model> $related The parent model class.
+     * @param array $foreignKeys Foreign keys in the child.
+     * @param array $ownerKeys Primary keys in the related (parent) model.
+     * @return Relation
+     */
     public static function belongsTo(Model $model, string $related, array $foreignKeys, array $ownerKeys): Relation
     {
         $builder = (new $related)->newQuery();
 
         foreach ($foreignKeys as $i => $foreignKey) {
             $value = $model->getAttribute($foreignKey);
-            if (is_null($value)) {
+            if ($value === null) {
                 return self::emptyRelation($builder, null, false);
             }
             $builder->where($ownerKeys[$i], $value);
@@ -38,6 +56,16 @@ class CompositeRelationBuilder
         return self::relation($builder, $model, null, false);
     }
 
+    /**
+     * Builds an anonymous Relation instance to simulate hasMany/belongsTo behavior
+     * for composite key relationships.
+     *
+     * @param Builder $query The base query builder for the related model.
+     * @param Model $parent The parent or child model, depending on context.
+     * @param mixed $default Default value to assign if no match is found.
+     * @param bool $many Indicates if the relation is one-to-many.
+     * @return Relation
+     */
     protected static function relation(Builder $query, Model $parent, $default, bool $many): Relation
     {
         return new class($query, $parent, $default, $many) extends Relation {
@@ -69,6 +97,9 @@ class CompositeRelationBuilder
         };
     }
 
+    /**
+     * Returns an always-empty relation. Used when key values are null or missing.
+     */
     protected static function emptyRelation(Builder $builder, $default, bool $many): Relation
     {
         return self::relation($builder->whereRaw('1 = 0'), new class extends Model {}, $default, $many);
