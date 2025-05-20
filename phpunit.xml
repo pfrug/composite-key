@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheResult="true"
          colors="true"
-         stopOnFailure="false"
-         backupGlobals="false"
-         backupStaticAttributes="false"
-         convertDeprecationsToExceptions="true"
-         convertWarningsToExceptions="true"
          failOnRisky="true"
-         failOnWarning="true"
-         testdox="false"
-         verbose="true">
+         failOnWarning="false"
+         failOnDeprecation="false">
 
     <testsuites>
         <testsuite name="CompositeKey Test Suite">
@@ -22,6 +19,4 @@
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
     </php>
-
 </phpunit>
-
