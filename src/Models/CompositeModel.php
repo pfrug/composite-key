@@ -7,4 +7,6 @@ use Pfrug\CompositeKey\Traits\HasCompositeKey;
 class CompositeModel extends Model
 {
     use HasCompositeKey;
+
+    public $incrementing = false;
 }
