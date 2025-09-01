@@ -27,13 +27,9 @@ class CompositeKeyRelation extends Relation
     {
         if (static::$constraints === false) return;
 
-        // Cuando es lazy-loading, aquí aplicamos las igualdades parent->child (hasMany)
-        // o child->parent (belongsTo). El builder viene ya filtrado desde el Builder,
-        // pero esto asegura consistencia si Laravel recompone la query.
         foreach ($this->localKeys as $i => $localKey) {
             $val = $this->parent->getAttribute($localKey);
             if ($val === null) {
-                // Sin valores => no hay resultados.
                 $this->query->whereRaw('1 = 0');
                 return;
             }
@@ -96,23 +92,25 @@ class CompositeKeyRelation extends Relation
     }
 
     /**
-     * Get the key for comparing against the parent key in "has" query.
+     * Get the key used for comparison against the parent key in "has" queries.
      *
+     * @return string|null
      */
     public function getExistenceCompareKey()
     {
-        // Nota: Laravel espera strings en estos métodos; si los usas en "has" queries
-        // podrías necesitar una estrategia distinta (p. ej., devolver el primer FK o lanzar).
         return $this->getQualifiedForeignKeyName();
     }
 
     /**
      * Get the foreign key for the relationship.
+     *
+     * For composite relationships, this method returns the first defined foreign key
+     * to maintain compatibility with Eloquent "has" queries.
+     *
+     * @return string|null
      */
     public function getQualifiedForeignKeyName()
     {
-        // Aquí devuelves el primero por compatibilidad con "has()" de Eloquent,
-        // o cambia tu estrategia de existencia para compuestos.
         return $this->foreignKeys[0] ?? null;
     }
 }
