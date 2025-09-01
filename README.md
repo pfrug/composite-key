@@ -163,6 +163,37 @@ $grade = Grade::first();
 echo $grade->enrollment->course_id;
 ```
 
+
+## Eager Loading with Composite Keys
+
+Composite relationships defined with `hasManyComposite` and `belongsToComposite` fully support eager loading via `with()` or `load()`.
+
+### Example
+
+```php
+use App\Models\Course;
+use App\Models\Grade;
+
+// 1) Eager-load enrollments and grades when retrieving courses
+$courses = Course::with(['enrollments.grades'])->get();
+
+foreach ($courses as $course) {
+    foreach ($course->enrollments as $enrollment) {
+        foreach ($enrollment->grades as $grade) {
+            echo $grade->value;
+        }
+    }
+}
+
+// 2) Eager-load course and student when retrieving grades
+$grades = Grade::with(['enrollment.course', 'enrollment.student'])->get();
+
+foreach ($grades as $grade) {
+    echo $grade->enrollment->course->name;
+    echo $grade->enrollment->student->name;
+}
+```
+
 ## Compatibility
 
 - Laravel 10+
