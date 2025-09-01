@@ -9,4 +9,5 @@ class CompositeModel extends Model
     use HasCompositeKey;
 
     public $incrementing = false;
+    public $timestamps = false;
 }

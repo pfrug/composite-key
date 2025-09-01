@@ -5,9 +5,15 @@ use Pfrug\CompositeKey\Helpers\CompositeKeyQuery;
 use Pfrug\CompositeKey\Helpers\CompositeRelationBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Pfrug\CompositeKey\Helpers\CompositeKeyBuilder;
 
 trait HasCompositeKey
 {
+    public function newEloquentBuilder($query)
+    {
+        return new CompositeKeyBuilder($query);
+    }
+
     public function getIncrementing(): bool
     {
         return false;
