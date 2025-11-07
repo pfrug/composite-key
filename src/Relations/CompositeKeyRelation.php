@@ -15,12 +15,12 @@ class CompositeKeyRelation extends Relation
 
     public function __construct(Builder $query, Model $parent, mixed $default, bool $many, array $foreignKeys, array $localKeys)
     {
-        parent::__construct($query, $parent);
-
         $this->default = $default;
         $this->many = $many;
         $this->foreignKeys = $foreignKeys;
         $this->localKeys = $localKeys;
+
+        parent::__construct($query, $parent);
     }
 
     public function addConstraints(): void
