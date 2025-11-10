@@ -12,7 +12,7 @@ class ShipmentHeader extends Model
 
     protected $table = 'shipment_headers';
     protected $fillable = ['company_code', 'shipment_number', 'description'];
-    protected array $compositeKey = ['company_code', 'shipment_number'];
+    protected $compositeKey = ['company_code', 'shipment_number'];
 
     public $timestamps = false;
 

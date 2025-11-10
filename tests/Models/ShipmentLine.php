@@ -13,7 +13,7 @@ class ShipmentLine extends Model
 
     protected $table = 'shipment_lines';
     protected $fillable = ['company_code', 'shipment_number', 'line_number', 'product_name', 'quantity'];
-    protected array $compositeKey = ['company_code', 'shipment_number', 'line_number'];
+    protected $compositeKey = ['company_code', 'shipment_number', 'line_number'];
 
     public $timestamps = false;
 

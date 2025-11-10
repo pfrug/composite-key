@@ -15,6 +15,8 @@ This package offers a lightweight and flexible solution to enable composite key 
 
 ## Installation
 
+Install via Composer:
+
 ```bash
 composer require pfrug/composite-key
 ```
@@ -31,7 +33,7 @@ class ShipmentHeader extends Model
 {
     use HasCompositeKey;
 
-    protected array $compositeKey = ['company_code', 'shipment_number'];
+    protected $compositeKey = ['company_code', 'shipment_number'];
 }
 ```
 
@@ -62,6 +64,55 @@ $this->belongsToComposite(
     ['foreign_key_1', 'foreign_key_2'],
     ['owner_key_1', 'owner_key_2']
 );
+```
+
+## Route Model Binding
+
+### HasCompositeRouteKey
+
+For models that need to be resolved from route parameters, use the `HasCompositeRouteKey` trait:
+
+```php
+use Pfrug\CompositeKey\Traits\HasCompositeKey;
+use Pfrug\CompositeKey\Traits\HasCompositeRouteKey;
+use Illuminate\Database\Eloquent\Model;
+
+class ShipmentHeader extends Model
+{
+    use HasCompositeKey, HasCompositeRouteKey;
+
+    protected $compositeKey = ['company_code', 'shipment_number'];
+}
+```
+
+This trait overrides `getRouteKey()` and `resolveRouteBinding()` for composite key support in route parameters.
+
+It enables route model binding for composite keys by:
+
+- **Encoding composite keys**: Converts composite key values to URL-safe strings using `:` as separator
+- **Decoding route parameters**: Resolves models from encoded composite key strings in URLs
+
+### Usage in Routes
+
+```php
+// Route definition
+Route::get('/shipments/{shipment}', function (ShipmentHeader $shipment) {
+    return $shipment;
+});
+
+// URL: /shipments/COMP001:SHIP123
+// Resolves to: ShipmentHeader::find(['COMP001', 'SHIP123'])
+```
+
+The route key format uses `:` as separator between composite key parts:
+- `company_code:shipment_number`
+- Example: `COMP001:SHIP123`
+
+**Note**: When generating URLs with Laravel's `route()` helper, use the model instance to get the properly formatted composite key:
+
+```php
+$shipment = ShipmentHeader::find(['COMP001', 'SHIP123']);
+$url = route('shipments.show', $shipment); // Generates: /shipments/COMP001:SHIP123
 ```
 
 ## Example: Composite Relationships in Practice
@@ -201,4 +252,4 @@ foreach ($grades as $grade) {
 
 ## License
 
-MIT
+This package is open-sourced software licensed under the [MIT license](LICENSE).
