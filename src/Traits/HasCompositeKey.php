@@ -68,7 +68,16 @@ trait HasCompositeKey
 
     public function delete(): bool|int|null
     {
-        return CompositeKeyQuery::forModel($this)->delete();
+        if ($this->fireModelEvent('deleting') === false) {
+            return false;
+        }
+        $result = CompositeKeyQuery::forModel($this)->delete();
+
+        if ($result) {
+            $this->fireModelEvent('deleted', false);
+        }
+
+        return $result;
     }
 
     public static function find(string|array $values): ?self
