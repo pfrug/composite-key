@@ -4,9 +4,15 @@ namespace Pfrug\CompositeKey\Helpers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Collection;
 use Pfrug\CompositeKey\Relations\CompositeKeyRelation;
 
+/**
+ * Factory for composite-key relations.
+ *
+ * Wraps the construction of {@see CompositeKeyRelation} so the trait can
+ * expose `hasManyComposite()` and `belongsToComposite()` without leaking
+ * the relation's constructor signature.
+ */
 class CompositeRelationBuilder
 {
     /**

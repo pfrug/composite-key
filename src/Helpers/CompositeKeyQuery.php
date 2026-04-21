@@ -5,6 +5,13 @@ namespace Pfrug\CompositeKey\Helpers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Internal query helpers shared by the composite-key trait and builder.
+ *
+ * Centralizes how a query is constrained to a model's composite key
+ * (by building a WHERE clause with every key column) and how the key
+ * values are read from a model instance.
+ */
 class CompositeKeyQuery
 {
     /**

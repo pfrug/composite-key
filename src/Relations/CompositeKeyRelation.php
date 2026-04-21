@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
+/**
+ * Eloquent relation whose join is expressed by an ordered pair of column lists
+ * (local / foreign) instead of a single key.
+ *
+ * Supports both "to-many" and "to-one" semantics through the `$many` flag, so
+ * it stands in for `HasMany` and `BelongsTo` when the underlying join uses a
+ * composite key. Eager loading is handled by grouping parent rows by their
+ * composite key and emitting a single OR-of-ANDs WHERE that matches every
+ * combination in one query.
+ */
 class CompositeKeyRelation extends Relation
 {
     protected mixed $default;
@@ -13,6 +23,10 @@ class CompositeKeyRelation extends Relation
     protected array $foreignKeys;
     protected array $localKeys;
 
+    /**
+     * @param  array<int, string>  $foreignKeys  Columns on the related table.
+     * @param  array<int, string>  $localKeys    Columns on the parent model, in matching order.
+     */
     public function __construct(Builder $query, Model $parent, mixed $default, bool $many, array $foreignKeys, array $localKeys)
     {
         $this->default = $default;
@@ -91,23 +105,14 @@ class CompositeKeyRelation extends Relation
         return $this->many ? $this->query->get() : $this->query->first();
     }
 
-    /**
-     * Get the key used for comparison against the parent key in "has" queries.
-     *
-     * @return string|null
-     */
     public function getExistenceCompareKey()
     {
         return $this->getQualifiedForeignKeyName();
     }
 
     /**
-     * Get the foreign key for the relationship.
-     *
-     * For composite relationships, this method returns the first defined foreign key
-     * to maintain compatibility with Eloquent "has" queries.
-     *
-     * @return string|null
+     * Composite relations don't have a single foreign key, so "has" queries
+     * fall back to the first one to stay compatible with Eloquent.
      */
     public function getQualifiedForeignKeyName()
     {
