@@ -6,14 +6,24 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 trait HasCompositeRouteKey
 {
-    protected const COMPOSITE_KEY_SEPARATOR = ':';
-
     public function getRouteKey()
     {
-        return implode(self::COMPOSITE_KEY_SEPARATOR, array_map(
-            fn($key) => $this->getAttribute(strtolower($key)),
+        return implode($this->getCompositeKeySeparator(), array_map(
+            fn($key) => $this->getAttribute($this->usesLowercaseKeys() ? strtolower($key) : $key),
             $this->getCompositeKey()
         ));
+    }
+
+    protected function getCompositeKeySeparator(): string
+    {
+        return config('composite-key.separator', '~');
+    }
+
+    protected function usesLowercaseKeys(): bool
+    {
+        $connection = $this->getConnectionName() ?? config('database.default');
+
+        return (bool) config("database.connections.{$connection}.lowercase_keys");
     }
 
     public function resolveRouteBinding($value, $field = null)
@@ -26,7 +36,7 @@ trait HasCompositeRouteKey
     protected function decodeCompositeKey(string $value): array
     {
         $keys = $this->getCompositeKey();
-        $parts = explode(self::COMPOSITE_KEY_SEPARATOR, $value);
+        $parts = explode($this->getCompositeKeySeparator(), $value);
 
         if (count($parts) !== count($keys)) {
             throw new ModelNotFoundException('Invalid composite key.');

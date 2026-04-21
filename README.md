@@ -89,7 +89,7 @@ This trait overrides `getRouteKey()` and `resolveRouteBinding()` for composite k
 
 It enables route model binding for composite keys by:
 
-- **Encoding composite keys**: Converts composite key values to URL-safe strings using `:` as separator
+- **Encoding composite keys**: Converts composite key values to URL-safe strings using a configurable separator (default `~`)
 - **Decoding route parameters**: Resolves models from encoded composite key strings in URLs
 
 ### Usage in Routes
@@ -100,19 +100,50 @@ Route::get('/shipments/{shipment}', function (ShipmentHeader $shipment) {
     return $shipment;
 });
 
-// URL: /shipments/COMP001:SHIP123
+// URL: /shipments/COMP001~SHIP123
 // Resolves to: ShipmentHeader::find(['COMP001', 'SHIP123'])
 ```
 
-The route key format uses `:` as separator between composite key parts:
-- `company_code:shipment_number`
-- Example: `COMP001:SHIP123`
+The route key format uses the configured separator (default `~`) between composite key parts:
+- `company_code~shipment_number`
+- Example: `COMP001~SHIP123`
 
 **Note**: When generating URLs with Laravel's `route()` helper, use the model instance to get the properly formatted composite key:
 
 ```php
 $shipment = ShipmentHeader::find(['COMP001', 'SHIP123']);
-$url = route('shipments.show', $shipment); // Generates: /shipments/COMP001:SHIP123
+$url = route('shipments.show', $shipment); // Generates: /shipments/COMP001~SHIP123
+```
+
+### Configuration
+
+The route key separator can be customized per project. Publish the config file:
+
+```bash
+php artisan vendor:publish --tag=composite-key-config
+```
+
+This creates `config/composite-key.php`:
+
+```php
+return [
+    'separator' => env('COMPOSITE_KEY_SEPARATOR', '~'),
+];
+```
+
+Override via `.env`:
+
+```
+COMPOSITE_KEY_SEPARATOR=:
+```
+
+Or override per model by redeclaring `getCompositeKeySeparator()`:
+
+```php
+protected function getCompositeKeySeparator(): string
+{
+    return '|';
+}
 ```
 
 ## Example: Composite Relationships in Practice
