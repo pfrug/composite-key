@@ -144,7 +144,7 @@ class CompositeKeyTest extends TestCase
 
         $headers = ShipmentHeader::with('lines')->get();
 
-        $this->assertCount(3, $headers);
+        $this->assertCount(2, $headers);
 
         $header1Loaded = $headers->where('company_code', 'EAGER1')->first();
         $header2Loaded = $headers->where('company_code', 'EAGER2')->first();
@@ -189,7 +189,7 @@ class CompositeKeyTest extends TestCase
 
         $lines = ShipmentLine::with('header')->get();
 
-        $this->assertCount(3, $lines);
+        $this->assertCount(2, $lines);
 
         $line1 = $lines->where('product_name', 'Line 1')->first();
         $line2 = $lines->where('product_name', 'Line 2')->first();
@@ -318,6 +318,110 @@ class CompositeKeyTest extends TestCase
         $this->assertEquals('Detail 1A', $firstLine->details[0]->detail_description);
         $this->assertEquals('Detail 1B', $firstLine->details[1]->detail_description);
         $this->assertEquals('Detail 2A', $secondLine->details[0]->detail_description);
+    }
+
+    public function test_has_on_has_many_composite_returns_only_parents_with_children()
+    {
+        ShipmentHeader::create([
+            'company_code' => 'WITH',
+            'shipment_number' => 'SHP001',
+            'description' => 'Has children'
+        ]);
+
+        ShipmentHeader::create([
+            'company_code' => 'EMPTY',
+            'shipment_number' => 'SHP002',
+            'description' => 'No children'
+        ]);
+
+        ShipmentLine::create([
+            'company_code' => 'WITH',
+            'shipment_number' => 'SHP001',
+            'line_number' => 1,
+            'product_name' => 'Widget',
+            'quantity' => 1,
+        ]);
+
+        $headers = ShipmentHeader::has('lines')->get();
+
+        $this->assertCount(1, $headers);
+        $this->assertEquals('WITH', $headers->first()->company_code);
+    }
+
+    public function test_where_has_on_has_many_composite_filters_by_related_column()
+    {
+        ShipmentHeader::create([
+            'company_code' => 'H1',
+            'shipment_number' => 'SHP001',
+            'description' => 'Header 1'
+        ]);
+
+        ShipmentHeader::create([
+            'company_code' => 'H2',
+            'shipment_number' => 'SHP002',
+            'description' => 'Header 2'
+        ]);
+
+        ShipmentLine::create([
+            'company_code' => 'H1',
+            'shipment_number' => 'SHP001',
+            'line_number' => 1,
+            'product_name' => 'TARGET',
+            'quantity' => 1,
+        ]);
+
+        ShipmentLine::create([
+            'company_code' => 'H2',
+            'shipment_number' => 'SHP002',
+            'line_number' => 1,
+            'product_name' => 'OTHER',
+            'quantity' => 1,
+        ]);
+
+        $headers = ShipmentHeader::whereHas('lines', function ($q) {
+            $q->where('product_name', 'TARGET');
+        })->get();
+
+        $this->assertCount(1, $headers);
+        $this->assertEquals('H1', $headers->first()->company_code);
+    }
+
+    public function test_where_has_on_belongs_to_composite_filters_by_parent_column()
+    {
+        ShipmentHeader::create([
+            'company_code' => 'PA',
+            'shipment_number' => 'SHP001',
+            'description' => 'MATCH'
+        ]);
+
+        ShipmentHeader::create([
+            'company_code' => 'PB',
+            'shipment_number' => 'SHP002',
+            'description' => 'NOPE'
+        ]);
+
+        ShipmentLine::create([
+            'company_code' => 'PA',
+            'shipment_number' => 'SHP001',
+            'line_number' => 1,
+            'product_name' => 'Line A',
+            'quantity' => 1,
+        ]);
+
+        ShipmentLine::create([
+            'company_code' => 'PB',
+            'shipment_number' => 'SHP002',
+            'line_number' => 1,
+            'product_name' => 'Line B',
+            'quantity' => 1,
+        ]);
+
+        $lines = ShipmentLine::whereHas('header', function ($q) {
+            $q->where('description', 'MATCH');
+        })->get();
+
+        $this->assertCount(1, $lines);
+        $this->assertEquals('Line A', $lines->first()->product_name);
     }
 
     public function test_lazy_loading_after_eager_loading()

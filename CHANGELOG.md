@@ -3,6 +3,8 @@
 ## v3.0.1 - 2026-04-24
 
 - **FIX**: `has` and `whereHas` on composite relations now generate a subquery that compares every `(localKeys[i], foreignKeys[i])` pair. The previous behavior relied on Eloquent's default `getRelationExistenceQuery`, which built the subquery using the parent's primary key and only the first foreign key, producing invalid SQL on models with a composite primary key.
+- **TESTS**: Added coverage for `has` and `whereHas` on composite relations (`hasManyComposite` and `belongsToComposite`).
+- **FIX**: Corrected expected counts in preexisting eager loading tests (`assertCount(3, ...)` replaced with `assertCount(2, ...)` to match the records actually created).
 
 ## v3.0.0 - 2026-04-21
 
