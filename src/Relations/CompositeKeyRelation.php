@@ -118,4 +118,27 @@ class CompositeKeyRelation extends Relation
     {
         return $this->foreignKeys[0] ?? null;
     }
+
+    /**
+     * Build the subquery used by `has` / `whereHas` so it matches every
+     * column pair of the composite key instead of a single key comparison.
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*']): Builder
+    {
+        $query->select($columns);
+
+        $parentTable  = $this->parent->getTable();
+        $relatedTable = $this->related->getTable();
+
+        foreach ($this->foreignKeys as $i => $foreignKey) {
+            $localKey = $this->localKeys[$i];
+            $query->whereColumn(
+                "{$parentTable}.{$localKey}",
+                '=',
+                "{$relatedTable}.{$foreignKey}"
+            );
+        }
+
+        return $query;
+    }
 }

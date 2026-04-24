@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.1 - 2026-04-24
+
+- **FIX**: `has` and `whereHas` on composite relations now generate a subquery that compares every `(localKeys[i], foreignKeys[i])` pair. The previous behavior relied on Eloquent's default `getRelationExistenceQuery`, which built the subquery using the parent's primary key and only the first foreign key, producing invalid SQL on models with a composite primary key.
+
 ## v3.0.0 - 2026-04-21
 
 - **BREAKING**: Removed `HasCompositeRouteKey::COMPOSITE_KEY_SEPARATOR` constant

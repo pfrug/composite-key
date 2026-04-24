@@ -276,6 +276,20 @@ foreach ($grades as $grade) {
 }
 ```
 
+## Existence Queries (`has` / `whereHas`)
+
+Composite relationships also support Eloquent's existence queries. `has()` and `whereHas()` generate a subquery that compares every `(localKeys[i], foreignKeys[i])` pair, so the filter works the same way on composite keys as it does on single-column relations.
+
+```php
+// Courses that have at least one enrollment
+$courses = Course::has('enrollments')->get();
+
+// Grades whose enrollment belongs to a specific course
+$grades = Grade::whereHas('enrollment', function ($query) {
+    $query->where('course_id', 1);
+})->get();
+```
+
 ## Compatibility
 
 - Laravel 10+
