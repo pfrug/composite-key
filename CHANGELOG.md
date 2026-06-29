@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.2 - 2026-06-29
+
+- **FIX**: `save()` and `delete()` now build the composite-key WHERE clause from the model's raw original attributes (`getRawOriginal`) instead of the current casted values (`getAttribute`). When a key column declared a cast, the casted value was bound into the query (e.g. a date cast yielding a `Y-m-d H:i:s` Carbon against a `Y-m-d` column), so no row matched and the update/delete silently affected 0 rows.
+
 ## v3.0.1 - 2026-04-24
 
 - **FIX**: `has` and `whereHas` on composite relations now generate a subquery that compares every `(localKeys[i], foreignKeys[i])` pair. The previous behavior relied on Eloquent's default `getRelationExistenceQuery`, which built the subquery using the parent's primary key and only the first foreign key, producing invalid SQL on models with a composite primary key.

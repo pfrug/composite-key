@@ -58,7 +58,12 @@ class CompositeKeyQuery
     }
 
     /**
-     * Returns the current composite key values from the given model.
+     * Returns the stored composite key values from the given model.
+     *
+     * Reads the raw original attributes (as loaded from the database) rather
+     * than the current casted values, so the WHERE clause matches the persisted
+     * row even when a key column declares a cast (e.g. a date cast that would
+     * otherwise yield a Carbon with a time component).
      *
      * @param Model $model
      * @return array<string, mixed>
@@ -70,7 +75,7 @@ class CompositeKeyQuery
         $keys = [];
 
         foreach ($model->getCompositeKey() as $key) {
-            $value = $model->getAttribute($key);
+            $value = $model->getRawOriginal($key);
             if ($value === null) {
                 throw new \RuntimeException("Missing composite key value for: {$key}");
             }
